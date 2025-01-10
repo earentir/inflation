@@ -1,0 +1,38 @@
+{
+  "countries": [
+    {
+      "name": "Greece",
+      "aliases": [
+        "GR",
+        "GRE",
+        "HELLAS"
+      ],
+      "code": "GR",
+      "base_year": 2015,
+      "inflation": {
+      }
+    },
+    {
+      "name": "Germany",
+      "aliases": [
+        "DE",
+        "GER"
+      ],
+      "code": "DE",
+      "base_year": 2015,
+      "inflation": {
+      }
+    },
+    {
+      "name": "United States",
+      "aliases": [
+        "US",
+        "USA"
+      ],
+      "code": "US",
+      "base_year": 2015,
+      "inflation": {
+      }
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+good source for EU rates
+https://data.ecb.europa.eu/data/data-categories/macroeconomic-and-sectoral-statistics/consumer-prices-and-inflation/total?searchTerm=&filterSequence=.frequency.reference_area_name&sort=relevance&pageSize=10&filterType=basic&showDatasetModal=false&filtersReset=false&resetAll=false&reference_area_name%5B0%5D=Germany&frequency%5B0%5D=M&resetAllFilters=false&tags_array%5B0%5D=Overall+index&tags_array%5B1%5D=Financial+market
