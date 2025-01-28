@@ -3,6 +3,7 @@ package inflation
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -20,6 +21,50 @@ func (d *Data) GetCountry(query string) (*Country, error) {
 		}
 	}
 	return nil, fmt.Errorf("country '%s' not found", query)
+}
+
+// GetAvailableYears returns a list of available years for a country.
+func (c *Country) GetAvailableYears() []int {
+	years := make([]int, 0, len(c.Inflation))
+	for year := range c.Inflation {
+		y, _ := strconv.Atoi(year)
+		years = append(years, y)
+	}
+	return years
+}
+
+// GetFirstDate returns the earliest year and month for a country.
+func (c *Country) GetFirstDate() (year int, month int) {
+	for yearStr, months := range c.Inflation {
+		y, _ := strconv.Atoi(yearStr)
+		if year == 0 || y < year {
+			year = y
+			for monthStr := range months {
+				m, _ := strconv.Atoi(monthStr)
+				if month == 0 || m < month {
+					month = m
+				}
+			}
+		}
+	}
+	return year, month
+}
+
+// GetLastDate returns the latest year and month for a country.
+func (c *Country) GetLastDate() (year int, month int) {
+	for yearStr, months := range c.Inflation {
+		y, _ := strconv.Atoi(yearStr)
+		if y > year {
+			year = y
+			for monthStr := range months {
+				m, _ := strconv.Atoi(monthStr)
+				if m > month {
+					month = m
+				}
+			}
+		}
+	}
+	return year, month
 }
 
 // YearInflation returns the inflation rate for a specific country and date.

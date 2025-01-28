@@ -610,3 +610,233 @@ func TestSaveInflationData(t *testing.T) {
 		t.Errorf("Saved data does not match original data.\nOriginal: %s\nSaved: %s", string(originalBytes), string(savedBytes))
 	}
 }
+func TestGetAvailableYears(t *testing.T) {
+	data := createTestData()
+
+	tests := []struct {
+		name          string
+		countryName   string
+		expectedYears []int
+		expectError   bool
+	}{
+		{
+			name:          "Get available years for United States",
+			countryName:   "United States",
+			expectedYears: []int{2015, 2016, 2018},
+			expectError:   false,
+		},
+		{
+			name:          "Get available years for Germany",
+			countryName:   "Germany",
+			expectedYears: []int{2015, 2018},
+			expectError:   false,
+		},
+		{
+			name:          "Get available years for Spain (no data)",
+			countryName:   "Spain",
+			expectedYears: []int{},
+			expectError:   false,
+		},
+		{
+			name:          "Get available years for non-existent country",
+			countryName:   "France",
+			expectedYears: nil,
+			expectError:   true,
+		},
+	}
+
+	// Adding Spain to data with no Inflation data
+	data.Countries = append(data.Countries, Country{
+		Name:      "Spain",
+		Aliases:   []string{"ES"},
+		Code:      "ES",
+		BaseYear:  0, // No BaseYear
+		Inflation: map[string]map[string]float64{},
+	})
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			country, err := data.GetCountry(tt.countryName)
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error for country '%s', but got none", tt.countryName)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Did not expect error for country '%s', but got: %v", tt.countryName, err)
+				return
+			}
+
+			availableYears := country.GetAvailableYears()
+			expected := tt.expectedYears
+
+			if len(expected) != len(availableYears) {
+				t.Errorf("For country '%s', expected %d available years, got %d", tt.countryName, len(expected), len(availableYears))
+			}
+
+			expectedMap := make(map[int]bool)
+			for _, y := range expected {
+				expectedMap[y] = true
+			}
+
+			for _, y := range availableYears {
+				if !expectedMap[y] {
+					t.Errorf("For country '%s', unexpected year %d in available years", tt.countryName, y)
+				}
+			}
+		})
+	}
+}
+func TestGetFirstDate(t *testing.T) {
+	data := createTestData()
+
+	tests := []struct {
+		name          string
+		countryName   string
+		expectedYear  int
+		expectedMonth int
+		expectError   bool
+	}{
+		{
+			name:          "Get first date for United States",
+			countryName:   "United States",
+			expectedYear:  2015,
+			expectedMonth: 1,
+			expectError:   false,
+		},
+		{
+			name:          "Get first date for Germany",
+			countryName:   "Germany",
+			expectedYear:  2015,
+			expectedMonth: 1,
+			expectError:   false,
+		},
+		{
+			name:          "Get first date for country with multiple years",
+			countryName:   "United States",
+			expectedYear:  2015,
+			expectedMonth: 1,
+			expectError:   false,
+		},
+		{
+			name:          "Get first date for country with no inflation data",
+			countryName:   "Spain",
+			expectedYear:  0,
+			expectedMonth: 0,
+			expectError:   true,
+		},
+		{
+			name:          "Get first date for non-existent country",
+			countryName:   "France",
+			expectedYear:  0,
+			expectedMonth: 0,
+			expectError:   true,
+		},
+	}
+
+	// Adding Spain with no inflation data to the data
+	data.Countries = append(data.Countries, Country{
+		Name:      "Spain",
+		Aliases:   []string{"ES"},
+		Code:      "ES",
+		BaseYear:  0,
+		Inflation: map[string]map[string]float64{},
+	})
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			country, err := data.GetCountry(tt.countryName)
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error for country '%s', but got none", tt.countryName)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Did not expect error for country '%s', but got: %v", tt.countryName, err)
+				return
+			}
+
+			year, month := country.GetFirstDate()
+			if year != tt.expectedYear || month != tt.expectedMonth {
+				t.Errorf("For country '%s', expected year=%d and month=%d, got year=%d and month=%d",
+					tt.countryName, tt.expectedYear, tt.expectedMonth, year, month)
+			}
+		})
+	}
+}
+func TestGetLastDate(t *testing.T) {
+	data := createTestData()
+
+	tests := []struct {
+		name          string
+		countryName   string
+		expectedYear  int
+		expectedMonth int
+		expectError   bool
+	}{
+		{
+			name:          "Standard case with multiple years and months",
+			countryName:   "United States",
+			expectedYear:  2018,
+			expectedMonth: 12,
+			expectError:   false,
+		},
+		{
+			name:          "Country with single year and month",
+			countryName:   "Germany",
+			expectedYear:  2015,
+			expectedMonth: 6,
+			expectError:   false,
+		},
+		{
+			name:          "Country with no inflation data",
+			countryName:   "Spain",
+			expectedYear:  0,
+			expectedMonth: 0,
+			expectError:   true,
+		},
+		{
+			name:          "Non-existent country",
+			countryName:   "France",
+			expectedYear:  0,
+			expectedMonth: 0,
+			expectError:   true,
+		},
+	}
+
+	// Adding Spain with no inflation data to the data
+	data.Countries = append(data.Countries, Country{
+		Name:      "Spain",
+		Aliases:   []string{"ES"},
+		Code:      "ES",
+		BaseYear:  0,
+		Inflation: map[string]map[string]float64{},
+	})
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			country, err := data.GetCountry(tt.countryName)
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error for country '%s', but got none", tt.countryName)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Did not expect error for country '%s', but got: %v", tt.countryName, err)
+				return
+			}
+
+			year, month := country.GetLastDate()
+			if year != tt.expectedYear || month != tt.expectedMonth {
+				t.Errorf("For country '%s', expected year=%d and month=%d, got year=%d and month=%d",
+					tt.countryName, tt.expectedYear, tt.expectedMonth, year, month)
+			}
+		})
+	}
+}
